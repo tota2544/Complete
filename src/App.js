@@ -67,6 +67,29 @@ const calculateMeanScore = (answers, questions) => {
   return values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : '0.00';
 };
 
+// ==================== GOOGLE SHEETS INTEGRATION ====================
+// PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHAXX4uHdQBL7ATeXICwy2X7jciq5lvhGwO_GPQsgrKcz6O2_f5QmAuuhVKzwMtLjz/exec';
+
+const submitToSheet = async (sheetName, data) => {
+  if (GOOGLE_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbwHAXX4uHdQBL7ATeXICwy2X7jciq5lvhGwO_GPQsgrKcz6O2_f5QmAuuhVKzwMtLjz/exec') {
+    console.warn('Google Sheets URL not configured. Data not submitted:', sheetName, data);
+    return;
+  }
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sheet: sheetName, timestamp: new Date().toISOString(), ...data }),
+    });
+    console.log(`✅ Submitted to ${sheetName}`);
+  } catch (error) {
+    console.error(`❌ Failed to submit to ${sheetName}:`, error);
+  }
+};
+// ==================== END GOOGLE SHEETS INTEGRATION ====================
+
 // -------------------- R1 DRAG SCHEDULER HELPERS/COMPONENTS --------------------
 const CORRECT_DURATIONS = {
   exc: Math.ceil(PROJECT_LENGTH / CREWS.exc.rate),
@@ -975,6 +998,26 @@ export default function LOBGame() {
       const startTime = new Date().toISOString();
       setGameLog(prev => ({ ...prev, startTime, studentName: data.demographics.name }));
       logEvent('GAME_START', { studentName: data.demographics.name });
+
+      // Submit PreSurvey to Google Sheets
+      submitToSheet('PreSurvey', {
+        sessionId: gameLog.sessionId,
+        studentId: data.demographics.studentId,
+        name: data.demographics.name,
+        program: data.demographics.program,
+        major: data.demographics.major,
+        priorCourses: data.demographics.priorCourses,
+        lobFamiliarity: data.demographics.lobFamiliarity,
+        K1: data.knowledge.K1, K2: data.knowledge.K2,
+        K3: data.knowledge.K3, K4: data.knowledge.K4,
+        K5: data.knowledge.K5, K6: data.knowledge.K6,
+        K7: data.knowledge.K7, K8: data.knowledge.K8,
+        knowledgeScore: data.knowledgeScore,
+        SE1: data.selfEfficacy.SE1, SE2: data.selfEfficacy.SE2,
+        SE3: data.selfEfficacy.SE3, SE4: data.selfEfficacy.SE4,
+        seScore: data.seScore,
+      });
+
       setRound(2);
     }} />;
   }
@@ -985,7 +1028,33 @@ export default function LOBGame() {
       playerName={playerName}
       preKnowledgeScore={preSurveyData?.knowledgeScore || 0}
       preSEScore={preSurveyData?.seScore || '0.00'}
-      onComplete={(data) => { setPostSurveyData(data); setRound(9); }}
+      onComplete={(data) => {
+        setPostSurveyData(data);
+
+        // Submit PostSurvey to Google Sheets
+        submitToSheet('PostSurvey', {
+          sessionId: gameLog.sessionId,
+          studentId: preSurveyData?.demographics?.studentId,
+          name: playerName,
+          K1: data.knowledge.K1, K2: data.knowledge.K2,
+          K3: data.knowledge.K3, K4: data.knowledge.K4,
+          K5: data.knowledge.K5, K6: data.knowledge.K6,
+          K7: data.knowledge.K7, K8: data.knowledge.K8,
+          knowledgeScore: data.knowledgeScore,
+          knowledgeGain: data.knowledgeGain,
+          SE1: data.selfEfficacy.SE1, SE2: data.selfEfficacy.SE2,
+          SE3: data.selfEfficacy.SE3, SE4: data.selfEfficacy.SE4,
+          seScore: data.seScore,
+          seGain: data.seGain,
+          EX1: data.experience.EX1, EX2: data.experience.EX2,
+          EX3: data.experience.EX3, EX4: data.experience.EX4,
+          EX5: data.experience.EX5, EX6: data.experience.EX6,
+          exScore: data.exScore,
+          comments: data.comments,
+        });
+
+        setRound(9);
+      }}
     />;
   }
 
@@ -1052,7 +1121,36 @@ export default function LOBGame() {
             </div>
           </div>
 
-          <button onClick={() => setRound(8)} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Continue to Final Survey →</button>
+          <button onClick={() => {
+            // Submit GameResults to Google Sheets
+            const totalTime = Object.values(gameLog.rounds).reduce((sum, r) => sum + (r.timeSpent || 0), 0);
+            submitToSheet('GameResults', {
+              sessionId: gameLog.sessionId,
+              studentId: preSurveyData?.demographics?.studentId,
+              name: playerName,
+              r1Duration: results[1]?.end,
+              r1ExcStart: results[1]?.excS,
+              r1PipeStart: results[1]?.pipeS,
+              r1BackStart: results[1]?.backS,
+              r2Duration: results[2]?.end,
+              r2Cost: r2BaseCost,
+              r3Duration: results[3]?.end,
+              r3Buffer: results[3]?.buffer,
+              r4Duration: results[4]?.end,
+              r4Cost: results[4]?.cost,
+              r5Duration: results[5]?.end,
+              r5Cost: results[5]?.cost,
+              r5Buffer: results[5]?.buffer,
+              r5Passed: results[5]?.pass ? 'Yes' : 'No',
+              totalTimeMin: (totalTime / 60).toFixed(2),
+              r1Time: gameLog.rounds[1]?.timeSpent || 0,
+              r2Time: gameLog.rounds[2]?.timeSpent || 0,
+              r3Time: gameLog.rounds[3]?.timeSpent || 0,
+              r4Time: gameLog.rounds[4]?.timeSpent || 0,
+              r5Time: gameLog.rounds[5]?.timeSpent || 0,
+            });
+            setRound(8);
+          }} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Continue to Final Survey →</button>
         </div>
       </div>
     );
