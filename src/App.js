@@ -76,16 +76,43 @@ const submitToSheet = async (sheetName, data) => {
     console.warn('Google Sheets URL not configured. Data not submitted:', sheetName, data);
     return;
   }
+  const payload = JSON.stringify({ sheet: sheetName, timestamp: new Date().toISOString(), ...data });
   try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
+    // Method 1: Use navigator.sendBeacon (most reliable, survives page navigation)
+    const blob = new Blob([payload], { type: 'text/plain' });
+    const sent = navigator.sendBeacon(GOOGLE_SCRIPT_URL, blob);
+    if (sent) {
+      console.log(`✅ Submitted to ${sheetName} via sendBeacon`);
+      return;
+    }
+    // Method 2: Fallback to fetch with text/plain (avoids CORS preflight)
+    await fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sheet: sheetName, timestamp: new Date().toISOString(), ...data }),
+      headers: { 'Content-Type': 'text/plain' },
+      body: payload,
     });
-    console.log(`✅ Submitted to ${sheetName}`);
+    console.log(`✅ Submitted to ${sheetName} via fetch`);
   } catch (error) {
     console.error(`❌ Failed to submit to ${sheetName}:`, error);
+    // Method 3: Last resort - iframe form submission
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = GOOGLE_SCRIPT_URL;
+      form.target = '_blank';
+      form.style.display = 'none';
+      const input = document.createElement('input');
+      input.name = 'data';
+      input.value = payload;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      // Don't actually submit the form (would open new tab), just log
+      document.body.removeChild(form);
+      console.warn('⚠️ Fallback methods exhausted for', sheetName);
+    } catch (e2) {
+      console.error('❌ All submission methods failed:', e2);
+    }
   }
 };
 // ==================== END GOOGLE SHEETS INTEGRATION ====================
