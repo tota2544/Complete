@@ -1139,15 +1139,6 @@ export default function LOBGame() {
             </ul>
           </div>
 
-          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h3 className="font-bold text-purple-800">📤 Export Your Game Data</h3>
-            <p className="text-sm text-purple-700 mt-1 mb-3">Please download your game data and submit it to your instructor for research purposes.</p>
-            <div className="flex gap-3 flex-wrap">
-              <button onClick={downloadGameDataCSV} className="px-4 py-2 bg-purple-600 text-white rounded font-bold hover:bg-purple-700 flex items-center gap-2">📊 Download CSV</button>
-              <button onClick={downloadGameData} className="px-4 py-2 bg-purple-500 text-white rounded font-bold hover:bg-purple-600 flex items-center gap-2">📁 Download JSON (detailed)</button>
-            </div>
-          </div>
-
           <button onClick={() => {
             // Submit GameResults to Google Sheets
             const totalTime = Object.values(gameLog.rounds).reduce((sum, r) => sum + (r.timeSpent || 0), 0);
