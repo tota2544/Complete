@@ -39,17 +39,17 @@ const KNOWLEDGE_QUESTIONS = [
   { id: 'K2', question: 'In a Line of Balance (LOB) chart, what does a steeper slope indicate?', options: [{ value: 'a', label: 'Slower production rate' }, { value: 'b', label: 'Faster production rate' }, { value: 'c', label: 'Higher cost' }, { value: 'd', label: 'Longer duration' }], correct: 'b' },
   { id: 'K3', question: 'What does it mean when two LOB lines cross each other?', options: [{ value: 'a', label: 'Activities are on schedule' }, { value: 'b', label: 'A conflict exists' }, { value: 'c', label: 'Buffer is too large' }, { value: 'd', label: 'Project is complete' }], correct: 'b' },
   { id: 'K4', question: 'What is the primary purpose of a buffer in LOB scheduling?', options: [{ value: 'a', label: 'Increase project cost' }, { value: 'b', label: 'Make the chart look better' }, { value: 'c', label: 'Prevent crew conflicts' }, { value: 'd', label: 'Reduce equipment needs' }], correct: 'c' },
-  { id: 'K5', question: 'If you increase the buffer size, what happens to project duration?', options: [{ value: 'a', label: 'Duration decreases' }, { value: 'b', label: 'Duration increases' }, { value: 'c', label: 'Duration stays the same' }, { value: 'd', label: 'Unpredictable' }], correct: 'b' },
-  { id: 'K6', question: 'If you increase the buffer size, what happens to total cost?', options: [{ value: 'a', label: 'Cost increases' }, { value: 'b', label: 'Cost decreases' }, { value: 'c', label: 'Cost stays the same' }, { value: 'd', label: 'Unpredictable' }], correct: 'c' },
-  { id: 'K7', question: 'If you use faster equipment, what happens to duration?', options: [{ value: 'a', label: 'Duration decreases' }, { value: 'b', label: 'Duration increases' }, { value: 'c', label: 'Duration stays the same' }, { value: 'd', label: 'Unpredictable' }], correct: 'a' },
-  { id: 'K8', question: 'How do you calculate activity duration?', options: [{ value: 'a', label: 'Project Length × Rate' }, { value: 'b', label: 'Rate ÷ Project Length' }, { value: 'c', label: 'Project Length ÷ Rate (rounded up)' }, { value: 'd', label: 'Project Length - Rate' }], correct: 'c' },
+  { id: 'K5', question: 'If you increase the buffer value, what happens to project duration?', options: [{ value: 'a', label: 'Project Duration decreases' }, { value: 'b', label: 'Project Duration increases' }, { value: 'c', label: 'Project Duration stays the same' }, { value: 'd', label: 'Required more data to interpret' }], correct: 'b' },
+  { id: 'K6', question: 'If you increase the buffer value, what happens to total cost?', options: [{ value: 'a', label: 'Total Cost increases' }, { value: 'b', label: 'Total Cost decreases' }, { value: 'c', label: 'Total Cost stays the same' }, { value: 'd', label: 'Required more data to interpret' }], correct: 'c' },
+  { id: 'K7', question: 'If you use faster equipment for ONE activity, what happens to the total project duration?', options: [{ value: 'a', label: 'Project Duration decreases' }, { value: 'b', label: 'Project Duration increases' }, { value: 'c', label: 'Project Duration stays the same' }, { value: 'd', label: 'Required more data to interpret' }], correct: 'd' },
+  { id: 'K8', question: 'How do you calculate activity duration?', options: [{ value: 'a', label: 'ROUNDUP(Project Length × Production Rate)' }, { value: 'b', label: 'ROUNDUP(Production Rate ÷ Project Length)' }, { value: 'c', label: 'ROUNDUP(Project Length ÷ Production Rate)' }, { value: 'd', label: 'ROUNDUP(Project Length – Production Rate)' }], correct: 'c' },
 ];
 
-const SELF_EFFICACY_QUESTIONS = [
-  { id: 'SE1', question: 'Calculate activity durations from production rates' },
-  { id: 'SE2', question: 'Identify scheduling conflicts using LOB' },
-  { id: 'SE3', question: 'Apply buffers correctly to prevent crew conflicts' },
-  { id: 'SE4', question: 'Optimize a schedule to meet duration and cost constraints' },
+const SELF_CONFIDENCE_QUESTIONS = [
+  { id: 'SC1', question: 'Calculate activity durations from production rates' },
+  { id: 'SC2', question: 'Identify scheduling conflicts using Line of Balance' },
+  { id: 'SC3', question: 'Apply buffers correctly to prevent crew conflicts' },
+  { id: 'SC4', question: 'Optimize a schedule to meet project duration and total cost constraints' },
 ];
 
 const EXPERIENCE_QUESTIONS = [
@@ -69,7 +69,7 @@ const calculateMeanScore = (answers, questions) => {
 
 // ==================== GOOGLE SHEETS INTEGRATION ====================
 // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHAXX4uHdQBL7ATeXICwy2X7jciq5lvhGwO_GPQsgrKcz6O2_f5QmAuuhVKzwMtLjz/exec';
+const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_SCRIPT_URL_HERE';
 
 const submitToSheet = async (sheetName, data) => {
   if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
@@ -527,18 +527,19 @@ function DraggableLOBChart({ r1Schedule, r2Schedule, onR2Change, durations }) {
 // ==================== PRE-SURVEY COMPONENT ====================
 function PreSurvey({ onComplete }) {
   const [step, setStep] = useState(1);
-  const [demographics, setDemographics] = useState({ studentId: '', name: '', program: '', major: '', priorCourses: '', lobFamiliarity: '' });
+  const [demographics, setDemographics] = useState({ favoriteColor: '', lastFourDigits: '', fieldOfStudy: '', priorCourses: '', lobFamiliarity: '' });
   const [knowledge, setKnowledge] = useState({});
-  const [selfEfficacy, setSelfEfficacy] = useState({});
+  const [selfConfidence, setSelfConfidence] = useState({});
 
-  const isDemoComplete = demographics.studentId && demographics.name && demographics.program && demographics.major && demographics.priorCourses && demographics.lobFamiliarity;
+  const isDemoComplete = demographics.favoriteColor && demographics.lastFourDigits && demographics.fieldOfStudy && demographics.priorCourses && demographics.lobFamiliarity;
   const isKnowledgeComplete = KNOWLEDGE_QUESTIONS.every(q => knowledge[q.id]);
-  const isSEComplete = SELF_EFFICACY_QUESTIONS.every(q => selfEfficacy[q.id]);
+  const isSCComplete = SELF_CONFIDENCE_QUESTIONS.every(q => selfConfidence[q.id]);
 
   const handleSubmit = () => {
     const knowledgeScore = calculateKnowledgeScore(knowledge);
-    const seScore = calculateMeanScore(selfEfficacy, SELF_EFFICACY_QUESTIONS);
-    onComplete({ demographics, knowledge, knowledgeScore, selfEfficacy, seScore });
+    const scScore = calculateMeanScore(selfConfidence, SELF_CONFIDENCE_QUESTIONS);
+    const anonymousId = `${demographics.favoriteColor}_${demographics.lastFourDigits}`;
+    onComplete({ demographics, anonymousId, knowledge, knowledgeScore, selfConfidence, scScore });
   };
 
   const getOptionClass = (selected, current) => `block w-full p-3 rounded-lg border-2 cursor-pointer text-left transition-all ${selected === current ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`;
@@ -565,12 +566,11 @@ function PreSurvey({ onComplete }) {
         {step === 1 && (
           <div className="bg-white rounded-xl p-6 space-y-5">
             <h2 className="text-xl font-bold text-gray-800 border-b pb-2">About You</h2>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Student ID *</label><input type="text" value={demographics.studentId} onChange={e => setDemographics({ ...demographics, studentId: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Enter your student ID" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Name *</label><input type="text" value={demographics.name} onChange={e => setDemographics({ ...demographics, name: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Enter your full name" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-2">Program *</label><div className="space-y-2">{['Undergraduate', "Master's", 'PhD', 'Other'].map(opt => (<label key={opt} className={getOptionClass(demographics.program, opt)}><input type="radio" name="program" value={opt} checked={demographics.program === opt} onChange={e => setDemographics({ ...demographics, program: e.target.value })} className="mr-3" />{opt}</label>))}</div></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-2">Major *</label><div className="space-y-2">{['Construction Science', 'Construction Management', 'Civil Engineering', 'Other'].map(opt => (<label key={opt} className={getOptionClass(demographics.major, opt)}><input type="radio" name="major" value={opt} checked={demographics.major === opt} onChange={e => setDemographics({ ...demographics, major: e.target.value })} className="mr-3" />{opt}</label>))}</div></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-1">What's your favorite color? *</label><input type="text" value={demographics.favoriteColor} onChange={e => setDemographics({ ...demographics, favoriteColor: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="e.g., Blue" /></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-1">What are the last four digits of your cell phone? *</label><input type="text" value={demographics.lastFourDigits} onChange={e => setDemographics({ ...demographics, lastFourDigits: e.target.value.replace(/\D/g, '').slice(0, 4) })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="e.g., 1234" maxLength={4} /></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-2">Field of Study *</label><div className="space-y-2">{['Construction Science', 'Construction Engineering', 'Civil Engineering', 'Architecture', 'Architectural Engineering', 'Other'].map(opt => (<label key={opt} className={getOptionClass(demographics.fieldOfStudy, opt)}><input type="radio" name="fieldOfStudy" value={opt} checked={demographics.fieldOfStudy === opt} onChange={e => setDemographics({ ...demographics, fieldOfStudy: e.target.value })} className="mr-3" />{opt}</label>))}</div></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-2">Have you taken any construction scheduling courses before? *</label><div className="flex gap-4">{['Yes', 'No'].map(opt => (<label key={opt} className={`flex-1 p-4 rounded-lg border-2 cursor-pointer text-center transition-all ${demographics.priorCourses === opt ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}><input type="radio" name="priorCourses" value={opt} checked={demographics.priorCourses === opt} onChange={e => setDemographics({ ...demographics, priorCourses: e.target.value })} className="mr-2" />{opt}</label>))}</div></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-2">How familiar are you with Line of Balance (LOB) scheduling? *</label><div className="space-y-2">{[{ value: 'never', label: 'Never heard of it' }, { value: 'heard', label: 'Heard of it but never used it' }, { value: 'class', label: 'Used it in a class setting' }, { value: 'work', label: 'Used it in real projects' }].map(opt => (<label key={opt.value} className={getOptionClass(demographics.lobFamiliarity, opt.value)}><input type="radio" name="lobFamiliarity" value={opt.value} checked={demographics.lobFamiliarity === opt.value} onChange={e => setDemographics({ ...demographics, lobFamiliarity: e.target.value })} className="mr-3" />{opt.label}</label>))}</div></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-2">How familiar are you with Line of Balance (LOB) scheduling? *</label><div className="space-y-2">{[{ value: 'no_experience', label: 'No Experience' }, { value: 'learned_in_class', label: 'Learned in Class' }, { value: 'used_in_practice', label: 'Used in Practice' }].map(opt => (<label key={opt.value} className={getOptionClass(demographics.lobFamiliarity, opt.value)}><input type="radio" name="lobFamiliarity" value={opt.value} checked={demographics.lobFamiliarity === opt.value} onChange={e => setDemographics({ ...demographics, lobFamiliarity: e.target.value })} className="mr-3" />{opt.label}</label>))}</div></div>
             <button onClick={() => setStep(2)} disabled={!isDemoComplete} className={`w-full py-4 rounded-lg font-bold text-lg transition-all ${isDemoComplete ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Continue to Knowledge Assessment →</button>
           </div>
         )}
@@ -591,15 +591,15 @@ function PreSurvey({ onComplete }) {
 
         {step === 3 && (
           <div className="bg-white rounded-xl p-6 space-y-5">
-            <h2 className="text-xl font-bold text-gray-800 border-b pb-2">Confidence Level</h2>
+            <h2 className="text-xl font-bold text-gray-800 border-b pb-2">Self-Confidence Level</h2>
             <p className="text-sm text-gray-600">Rate your confidence in performing the following tasks (1 = Not confident at all, 5 = Very confident)</p>
-            {SELF_EFFICACY_QUESTIONS.map((q, index) => (
+            {SELF_CONFIDENCE_QUESTIONS.map((q, index) => (
               <div key={q.id} className="border border-gray-200 rounded-lg p-4">
                 <h3 className="font-medium text-gray-800 mb-3"><span className="text-blue-600">{index + 1}.</span> {q.question}</h3>
-                <div className="flex justify-between gap-2">{[1, 2, 3, 4, 5].map(num => (<label key={num} className={getRatingClass(selfEfficacy[q.id], num)}><input type="radio" className="sr-only" checked={selfEfficacy[q.id] === num} onChange={() => setSelfEfficacy({ ...selfEfficacy, [q.id]: num })} /><span className={`text-2xl font-bold ${selfEfficacy[q.id] === num ? 'text-blue-600' : 'text-gray-400'}`}>{num}</span><span className="text-xs text-gray-500 mt-1">{num === 1 ? 'Low' : num === 5 ? 'High' : ''}</span></label>))}</div>
+                <div className="flex justify-between gap-2">{[1, 2, 3, 4, 5].map(num => (<label key={num} className={getRatingClass(selfConfidence[q.id], num)}><input type="radio" className="sr-only" checked={selfConfidence[q.id] === num} onChange={() => setSelfConfidence({ ...selfConfidence, [q.id]: num })} /><span className={`text-2xl font-bold ${selfConfidence[q.id] === num ? 'text-blue-600' : 'text-gray-400'}`}>{num}</span><span className="text-xs text-gray-500 mt-1">{num === 1 ? 'Low' : num === 5 ? 'High' : ''}</span></label>))}</div>
               </div>
             ))}
-            <div className="flex gap-3 pt-2"><button onClick={() => setStep(2)} className="flex-1 py-3 rounded-lg font-bold border-2 border-gray-300 hover:bg-gray-50">← Back</button><button onClick={handleSubmit} disabled={!isSEComplete} className={`flex-1 py-3 rounded-lg font-bold transition-all ${isSEComplete ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Start Game →</button></div>
+            <div className="flex gap-3 pt-2"><button onClick={() => setStep(2)} className="flex-1 py-3 rounded-lg font-bold border-2 border-gray-300 hover:bg-gray-50">← Back</button><button onClick={handleSubmit} disabled={!isSCComplete} className={`flex-1 py-3 rounded-lg font-bold transition-all ${isSCComplete ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Start Game →</button></div>
           </div>
         )}
       </div>
@@ -608,22 +608,23 @@ function PreSurvey({ onComplete }) {
 }
 
 // ==================== POST-SURVEY COMPONENT ====================
-function PostSurvey({ onComplete, playerName, preKnowledgeScore, preSEScore }) {
+function PostSurvey({ onComplete, playerName, preKnowledgeScore, preSCScore }) {
   const [step, setStep] = useState(1);
   const [knowledge, setKnowledge] = useState({});
-  const [selfEfficacy, setSelfEfficacy] = useState({});
+  const [selfConfidence, setSelfConfidence] = useState({});
   const [experience, setExperience] = useState({});
-  const [comments, setComments] = useState('');
+  const [commentPlus, setCommentPlus] = useState('');
+  const [commentDelta, setCommentDelta] = useState('');
 
   const isKnowledgeComplete = KNOWLEDGE_QUESTIONS.every(q => knowledge[q.id]);
-  const isSEComplete = SELF_EFFICACY_QUESTIONS.every(q => selfEfficacy[q.id]);
+  const isSCComplete = SELF_CONFIDENCE_QUESTIONS.every(q => selfConfidence[q.id]);
   const isEXComplete = EXPERIENCE_QUESTIONS.every(q => experience[q.id]);
 
   const handleSubmit = () => {
     const knowledgeScore = calculateKnowledgeScore(knowledge);
-    const seScore = calculateMeanScore(selfEfficacy, SELF_EFFICACY_QUESTIONS);
+    const scScore = calculateMeanScore(selfConfidence, SELF_CONFIDENCE_QUESTIONS);
     const exScore = calculateMeanScore(experience, EXPERIENCE_QUESTIONS);
-    onComplete({ knowledge, knowledgeScore, knowledgeGain: knowledgeScore - preKnowledgeScore, selfEfficacy, seScore, seGain: (parseFloat(seScore) - parseFloat(preSEScore)).toFixed(2), experience, exScore, comments });
+    onComplete({ knowledge, knowledgeScore, knowledgeGain: knowledgeScore - preKnowledgeScore, selfConfidence, scScore, scGain: (parseFloat(scScore) - parseFloat(preSCScore)).toFixed(2), experience, exScore, commentPlus, commentDelta });
   };
 
   const getOptionClass = (selected, current) => `block w-full p-3 rounded-lg border-2 cursor-pointer text-left transition-all ${selected === current ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300'}`;
@@ -665,13 +666,13 @@ function PostSurvey({ onComplete, playerName, preKnowledgeScore, preSEScore }) {
           <div className="bg-white rounded-xl p-6 space-y-5">
             <h2 className="text-xl font-bold text-gray-800 border-b pb-2">Confidence Level (Post-Game)</h2>
             <p className="text-sm text-gray-600">Rate your confidence now after playing the game (1 = Not confident, 5 = Very confident)</p>
-            {SELF_EFFICACY_QUESTIONS.map((q, index) => (
+            {SELF_CONFIDENCE_QUESTIONS.map((q, index) => (
               <div key={q.id} className="border border-gray-200 rounded-lg p-4">
                 <h3 className="font-medium text-gray-800 mb-3"><span className="text-green-600">{index + 1}.</span> {q.question}</h3>
-                <div className="flex justify-between gap-2">{[1, 2, 3, 4, 5].map(num => (<label key={num} className={getRatingClass(selfEfficacy[q.id], num)}><input type="radio" className="sr-only" checked={selfEfficacy[q.id] === num} onChange={() => setSelfEfficacy({ ...selfEfficacy, [q.id]: num })} /><span className={`text-2xl font-bold ${selfEfficacy[q.id] === num ? 'text-green-600' : 'text-gray-400'}`}>{num}</span></label>))}</div>
+                <div className="flex justify-between gap-2">{[1, 2, 3, 4, 5].map(num => (<label key={num} className={getRatingClass(selfConfidence[q.id], num)}><input type="radio" className="sr-only" checked={selfConfidence[q.id] === num} onChange={() => setSelfConfidence({ ...selfConfidence, [q.id]: num })} /><span className={`text-2xl font-bold ${selfConfidence[q.id] === num ? 'text-green-600' : 'text-gray-400'}`}>{num}</span></label>))}</div>
               </div>
             ))}
-            <div className="flex gap-3 pt-2"><button onClick={() => setStep(1)} className="flex-1 py-3 rounded-lg font-bold border-2 border-gray-300 hover:bg-gray-50">← Back</button><button onClick={() => setStep(3)} disabled={!isSEComplete} className={`flex-1 py-3 rounded-lg font-bold transition-all ${isSEComplete ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Continue →</button></div>
+            <div className="flex gap-3 pt-2"><button onClick={() => setStep(1)} className="flex-1 py-3 rounded-lg font-bold border-2 border-gray-300 hover:bg-gray-50">← Back</button><button onClick={() => setStep(3)} disabled={!isSCComplete} className={`flex-1 py-3 rounded-lg font-bold transition-all ${isSCComplete ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Continue →</button></div>
           </div>
         )}
 
@@ -685,7 +686,8 @@ function PostSurvey({ onComplete, playerName, preKnowledgeScore, preSEScore }) {
                 <div className="flex justify-between gap-2">{[1, 2, 3, 4, 5].map(num => (<label key={num} className={getRatingClass(experience[q.id], num)}><input type="radio" className="sr-only" checked={experience[q.id] === num} onChange={() => setExperience({ ...experience, [q.id]: num })} /><span className={`text-2xl font-bold ${experience[q.id] === num ? 'text-green-600' : 'text-gray-400'}`}>{num}</span></label>))}</div>
               </div>
             ))}
-            <div><label className="block text-sm font-medium text-gray-700 mb-2">Additional Comments (Optional)</label><textarea value={comments} onChange={e => setComments(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none" rows={4} placeholder="Share any feedback about the game..." /></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-2">Plus: What aspect do you like most about the game? (Optional)</label><textarea value={commentPlus} onChange={e => setCommentPlus(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none" rows={3} placeholder="What did you like most?" /></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-2">Delta: What aspect do you think could be improved? (Optional)</label><textarea value={commentDelta} onChange={e => setCommentDelta(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none" rows={3} placeholder="What could be improved?" /></div>
             <div className="flex gap-3 pt-2"><button onClick={() => setStep(2)} className="flex-1 py-3 rounded-lg font-bold border-2 border-gray-300 hover:bg-gray-50">← Back</button><button onClick={handleSubmit} disabled={!isEXComplete} className={`flex-1 py-3 rounded-lg font-bold transition-all ${isEXComplete ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Complete Survey →</button></div>
           </div>
         )}
@@ -947,7 +949,7 @@ export default function LOBGame() {
     </div>
   );
 
-  const playerName = preSurveyData?.demographics?.name || '';
+  const playerName = preSurveyData?.anonymousId || 'Student';
 
   // ==================== ROUND 0: INTRO ====================
   if (round === 0) {
@@ -1023,16 +1025,16 @@ export default function LOBGame() {
     return <PreSurvey onComplete={(data) => {
       setPreSurveyData(data);
       const startTime = new Date().toISOString();
-      setGameLog(prev => ({ ...prev, startTime, studentName: data.demographics.name }));
-      logEvent('GAME_START', { studentName: data.demographics.name });
+      setGameLog(prev => ({ ...prev, startTime, studentName: data.anonymousId }));
+      logEvent('GAME_START', { anonymousId: data.anonymousId });
 
       // Submit PreSurvey to Google Sheets
       submitToSheet('PreSurvey', {
         sessionId: gameLog.sessionId,
-        studentId: data.demographics.studentId,
-        name: data.demographics.name,
-        program: data.demographics.program,
-        major: data.demographics.major,
+        anonymousId: data.anonymousId,
+        favoriteColor: data.demographics.favoriteColor,
+        lastFourDigits: data.demographics.lastFourDigits,
+        fieldOfStudy: data.demographics.fieldOfStudy,
         priorCourses: data.demographics.priorCourses,
         lobFamiliarity: data.demographics.lobFamiliarity,
         K1: data.knowledge.K1, K2: data.knowledge.K2,
@@ -1040,9 +1042,9 @@ export default function LOBGame() {
         K5: data.knowledge.K5, K6: data.knowledge.K6,
         K7: data.knowledge.K7, K8: data.knowledge.K8,
         knowledgeScore: data.knowledgeScore,
-        SE1: data.selfEfficacy.SE1, SE2: data.selfEfficacy.SE2,
-        SE3: data.selfEfficacy.SE3, SE4: data.selfEfficacy.SE4,
-        seScore: data.seScore,
+        SC1: data.selfConfidence.SC1, SC2: data.selfConfidence.SC2,
+        SC3: data.selfConfidence.SC3, SC4: data.selfConfidence.SC4,
+        scScore: data.scScore,
       });
 
       setRound(2);
@@ -1054,30 +1056,30 @@ export default function LOBGame() {
     return <PostSurvey
       playerName={playerName}
       preKnowledgeScore={preSurveyData?.knowledgeScore || 0}
-      preSEScore={preSurveyData?.seScore || '0.00'}
+      preSCScore={preSurveyData?.scScore || '0.00'}
       onComplete={(data) => {
         setPostSurveyData(data);
 
         // Submit PostSurvey to Google Sheets
         submitToSheet('PostSurvey', {
           sessionId: gameLog.sessionId,
-          studentId: preSurveyData?.demographics?.studentId,
-          name: playerName,
+          anonymousId: preSurveyData?.anonymousId,
           K1: data.knowledge.K1, K2: data.knowledge.K2,
           K3: data.knowledge.K3, K4: data.knowledge.K4,
           K5: data.knowledge.K5, K6: data.knowledge.K6,
           K7: data.knowledge.K7, K8: data.knowledge.K8,
           knowledgeScore: data.knowledgeScore,
           knowledgeGain: data.knowledgeGain,
-          SE1: data.selfEfficacy.SE1, SE2: data.selfEfficacy.SE2,
-          SE3: data.selfEfficacy.SE3, SE4: data.selfEfficacy.SE4,
-          seScore: data.seScore,
-          seGain: data.seGain,
+          SC1: data.selfConfidence.SC1, SC2: data.selfConfidence.SC2,
+          SC3: data.selfConfidence.SC3, SC4: data.selfConfidence.SC4,
+          scScore: data.scScore,
+          scGain: data.scGain,
           EX1: data.experience.EX1, EX2: data.experience.EX2,
           EX3: data.experience.EX3, EX4: data.experience.EX4,
           EX5: data.experience.EX5, EX6: data.experience.EX6,
           exScore: data.exScore,
-          comments: data.comments,
+          commentPlus: data.commentPlus,
+          commentDelta: data.commentDelta,
         });
 
         setRound(9);
@@ -1139,13 +1141,21 @@ export default function LOBGame() {
             </ul>
           </div>
 
+          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+            <h3 className="font-bold text-purple-800">📤 Export Your Game Data</h3>
+            <p className="text-sm text-purple-700 mt-1 mb-3">Please download your game data and submit it to your instructor for research purposes.</p>
+            <div className="flex gap-3 flex-wrap">
+              <button onClick={downloadGameDataCSV} className="px-4 py-2 bg-purple-600 text-white rounded font-bold hover:bg-purple-700 flex items-center gap-2">📊 Download CSV</button>
+              <button onClick={downloadGameData} className="px-4 py-2 bg-purple-500 text-white rounded font-bold hover:bg-purple-600 flex items-center gap-2">📁 Download JSON (detailed)</button>
+            </div>
+          </div>
+
           <button onClick={() => {
             // Submit GameResults to Google Sheets
             const totalTime = Object.values(gameLog.rounds).reduce((sum, r) => sum + (r.timeSpent || 0), 0);
             submitToSheet('GameResults', {
               sessionId: gameLog.sessionId,
-              studentId: preSurveyData?.demographics?.studentId,
-              name: playerName,
+              anonymousId: preSurveyData?.anonymousId,
               r1Duration: results[1]?.end,
               r1ExcStart: results[1]?.excS,
               r1PipeStart: results[1]?.pipeS,
