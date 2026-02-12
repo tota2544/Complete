@@ -705,7 +705,6 @@ function ThankYou() {
         <h1 className="text-3xl font-bold text-purple-900 mb-2">Thank You!</h1>
         <p className="text-gray-600 mb-6">You have completed the LOB Simulation Game and all surveys.</p>
         <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6"><div className="text-green-700 font-bold">✓ Your responses have been recorded</div></div>
-        <button onClick={() => window.location.reload()} className="px-8 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-all">Play Again</button>
       </div>
     </div>
   );
@@ -1139,15 +1138,6 @@ export default function LOBGame() {
               <li><strong>R4:</strong> Rate ↑ → Duration ↓, Cost may ↑ or ↓</li>
               <li><strong>R5:</strong> Balance equipment + buffer to meet <strong>both</strong> constraints</li>
             </ul>
-          </div>
-
-          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h3 className="font-bold text-purple-800">📤 Export Your Game Data</h3>
-            <p className="text-sm text-purple-700 mt-1 mb-3">Please download your game data and submit it to your instructor for research purposes.</p>
-            <div className="flex gap-3 flex-wrap">
-              <button onClick={downloadGameDataCSV} className="px-4 py-2 bg-purple-600 text-white rounded font-bold hover:bg-purple-700 flex items-center gap-2">📊 Download CSV</button>
-              <button onClick={downloadGameData} className="px-4 py-2 bg-purple-500 text-white rounded font-bold hover:bg-purple-600 flex items-center gap-2">📁 Download JSON (detailed)</button>
-            </div>
           </div>
 
           <button onClick={() => {
