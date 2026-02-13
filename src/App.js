@@ -71,7 +71,7 @@ const calculateMeanScore = (answers, questions) => {
 
 // ==================== GOOGLE SHEETS INTEGRATION ====================
 // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
-const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_SCRIPT_URL_HERE';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHAXX4uHdQBL7ATeXICwy2X7jciq5lvhGwO_GPQsgrKcz6O2_f5QmAuuhVKzwMtLjz/exec';
 
 const submitToSheet = async (sheetName, data) => {
   if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
