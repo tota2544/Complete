@@ -239,10 +239,10 @@ function R1DurationInputCell({ value, onChange, isCorrect, submitted }) {
   return <input type="number" value={value} onChange={onChange} disabled={submitted && isCorrect} className={className} placeholder="?" />;
 }
 
-function Round1({ onComplete }) {
-  const [durInput, setDurInput] = useState({ exc: '', pipe: '', back: '' });
-  const [durValidated, setDurValidated] = useState(false);
-  const [scheduleInput, setScheduleInput] = useState({ excS: '', pipeS: '', backS: '' });
+function Round1({ onComplete, savedSchedule }) {
+  const [durInput, setDurInput] = useState(savedSchedule ? { exc: String(CORRECT_DURATIONS.exc), pipe: String(CORRECT_DURATIONS.pipe), back: String(CORRECT_DURATIONS.back) } : { exc: '', pipe: '', back: '' });
+  const [durValidated, setDurValidated] = useState(!!savedSchedule);
+  const [scheduleInput, setScheduleInput] = useState(savedSchedule ? { excS: String(savedSchedule.excS), pipeS: String(savedSchedule.pipeS), backS: String(savedSchedule.backS) } : { excS: '', pipeS: '', backS: '' });
 
   const durations = useMemo(() => ({ exc: parseInt(durInput.exc) || 0, pipe: parseInt(durInput.pipe) || 0, back: parseInt(durInput.back) || 0 }), [durInput]);
   const durCorrect = { exc: durations.exc === CORRECT_DURATIONS.exc, pipe: durations.pipe === CORRECT_DURATIONS.pipe, back: durations.back === CORRECT_DURATIONS.back };
@@ -1224,7 +1224,7 @@ export default function LOBGame() {
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             {canGoBack && (
-              <button onClick={goBack} className="px-2 py-1 bg-blue-700 hover:bg-blue-600 rounded text-sm font-bold transition-all" title="Go back to revise previous round">
+              <button onClick={goBack} className="px-3 py-1 bg-white text-blue-900 hover:bg-blue-100 rounded text-sm font-bold transition-all shadow-sm" title="Go back to revise previous round">
                 ← Back
               </button>
             )}
@@ -1246,7 +1246,7 @@ export default function LOBGame() {
       <div className="max-w-5xl mx-auto p-4 space-y-4">
         {/* R1: Bar Chart (round === 2, gameRound === 1) */}
         {gameRound === 1 && (
-          <Round1 onComplete={(fullSchedule) => {
+          <Round1 savedSchedule={r1Schedule} onComplete={(fullSchedule) => {
             setR1Schedule(fullSchedule);
             setResults(p => ({ ...p, 1: { round: 1, ...fullSchedule } }));
             completeRound(1, { excStart: fullSchedule.excS, excEnd: fullSchedule.excE, pipeStart: fullSchedule.pipeS, pipeEnd: fullSchedule.pipeE, backStart: fullSchedule.backS, backEnd: fullSchedule.backE, projectEnd: fullSchedule.end });
@@ -1348,8 +1348,11 @@ export default function LOBGame() {
 
           {allGreen && (<>
             <div className="bg-white rounded-lg shadow p-4"><h3 className="font-bold mb-2">💰 Budget (Auto-Calculated)</h3><BudgetTable cost={r2Cost} durExc={dur.exc} durPipe={dur.pipe} durBack={dur.back} costExc={CREWS.exc.cost} costPipe={CREWS.pipe.cost} costBack={CREWS.back.cost} /></div>
-            <button onClick={nextRound} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">Complete R2 → R3</button>
           </>)}
+          <div className="flex gap-3">
+            <button onClick={goBack} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">← Back to R1</button>
+            {allGreen && <button onClick={nextRound} className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">Complete R2 → R3</button>}
+          </div>
           </>);
         })()}
 
@@ -1381,7 +1384,10 @@ export default function LOBGame() {
             <ResponsiveContainer width="100%" height={280}><LineChart data={genLOB([r2Correct, r3])} margin={{ top: 10, right: 30, bottom: 30, left: 60 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="day" label={{ value: 'Duration (day)', position: 'insideBottom', offset: -5 }} /><YAxis domain={[0, PROJECT_LENGTH]} tickFormatter={v => (v/1000).toFixed(0)+'k'} label={{ value: 'Distance (ft)', angle: -90, position: 'insideLeft', offset: 10 }} /><Tooltip /><Legend verticalAlign="top" height={36} /><Line type="linear" dataKey="exc0" stroke="#2563eb" strokeWidth={1} strokeDasharray="5 5" name="Exc R2" dot={false} /><Line type="linear" dataKey="pipe0" stroke="#16a34a" strokeWidth={1} strokeDasharray="5 5" name="Pipe R2" dot={false} /><Line type="linear" dataKey="back0" stroke="#ea580c" strokeWidth={1} strokeDasharray="5 5" name="Back R2" dot={false} /><Line type="linear" dataKey="exc1" stroke="#2563eb" strokeWidth={3} name="Exc R3" dot={false} /><Line type="linear" dataKey="pipe1" stroke="#16a34a" strokeWidth={3} name="Pipe R3" dot={false} /><Line type="linear" dataKey="back1" stroke="#ea580c" strokeWidth={3} name="Back R3" dot={false} /></LineChart></ResponsiveContainer>
           </div>
           <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded"><h4 className="font-bold text-yellow-800">💡 Key Insight</h4><div className="mt-2 text-sm text-yellow-900 space-y-1"><p>Buffer ↑ → Duration ↑</p><p>Buffer ↑ → Cost stays the <strong>SAME</strong></p></div><p className="mt-3 text-sm text-yellow-800">Why? Buffer only shifts <em>when</em> crews work, not <em>how long</em> they work.</p></div>
-          <button onClick={nextRound} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Complete R3 → R4</button>
+          <div className="flex gap-3">
+            <button onClick={goBack} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">← Back to R2</button>
+            <button onClick={nextRound} className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold">Complete R3 → R4</button>
+          </div>
         </>)}
 
         {/* R4: Rate Analysis (round === 5, gameRound === 4) */}
@@ -1415,7 +1421,10 @@ export default function LOBGame() {
           </div>
           <div className="bg-white rounded-lg shadow p-4"><h3 className="font-bold mb-2">💰 R4 Budget</h3><BudgetTable cost={r4Cost} durExc={r4.excDur} durPipe={r4.pipeDur} durBack={r4.backDur} costExc={r4.excCost} costPipe={r4.pipeCost} costBack={r4.backCost} /></div>
           <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded"><h4 className="font-bold text-yellow-800">💡 Key Insight</h4><div className="mt-2 text-sm text-yellow-900 space-y-1"><p>Rate ↑ → Duration ↓</p><p>Rate ↑ → Cost may ↑ or ↓</p></div><p className="mt-3 text-sm text-yellow-800"><strong>The cheapest option is not always the slowest!</strong></p></div>
-          <button onClick={nextRound} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Complete R4 → R5</button>
+          <div className="flex gap-3">
+            <button onClick={goBack} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">← Back to R3</button>
+            <button onClick={nextRound} className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold">Complete R4 → R5</button>
+          </div>
         </>)}
 
         {/* R5: Optimization (round === 6, gameRound === 5) */}
@@ -1457,7 +1466,10 @@ export default function LOBGame() {
           </div>
           <div className="bg-white rounded-lg shadow p-4"><h3 className="font-bold mb-2">💰 R5 Budget</h3><BudgetTable cost={r5Cost} durExc={r5.excDur} durPipe={r5.pipeDur} durBack={r5.backDur} costExc={r5.excCost} costPipe={r5.pipeCost} costBack={r5.backCost} /></div>
           <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded"><h4 className="font-bold text-yellow-800">💡 Key Insight</h4><p className="text-sm text-yellow-900 mt-2">More equipment → Faster but costs more. Smaller buffer → Faster but riskier. <strong>Find the balance!</strong></p></div>
-          <button onClick={nextRound} className="w-full bg-purple-600 text-white py-3 rounded-lg font-bold">Finish Game 🏆</button>
+          <div className="flex gap-3">
+            <button onClick={goBack} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">← Back to R4</button>
+            <button onClick={nextRound} className="flex-1 bg-purple-600 text-white py-3 rounded-lg font-bold">Finish Game 🏆</button>
+          </div>
         </>)}
       </div>
     </div>
