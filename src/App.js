@@ -1195,7 +1195,6 @@ export default function LOBGame() {
                   </tr>
                 </tbody>
               </table>
-              <p className="text-xs text-blue-600 mt-2">Total back presses: {backCount.r2to1 + backCount.r3to2 + backCount.r4to3 + backCount.r5to4 + backCount.summaryTo5}</p>
             </div>
           )}
 
