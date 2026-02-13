@@ -69,7 +69,7 @@ const calculateMeanScore = (answers, questions) => {
 
 // ==================== GOOGLE SHEETS INTEGRATION ====================
 // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHAXX4uHdQBL7ATeXICwy2X7jciq5lvhGwO_GPQsgrKcz6O2_f5QmAuuhVKzwMtLjz/exec';
+const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_SCRIPT_URL_HERE';
 
 const submitToSheet = async (sheetName, data) => {
   if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
@@ -226,6 +226,19 @@ function DraggableBarChart({ schedule, durations, onScheduleChange }) {
   );
 }
 
+// Standalone input components (defined outside Round1 to prevent re-mount on every render)
+function R1InputCell({ value, onChange, disabled }) {
+  return <input type="number" value={value} onChange={onChange} disabled={disabled} className={`w-16 px-1 py-1 border-2 rounded text-center text-sm font-bold ${disabled ? 'bg-gray-100 border-gray-300 text-gray-400' : 'bg-yellow-50 border-yellow-400'}`} placeholder="?" />;
+}
+
+function R1DurationInputCell({ value, onChange, isCorrect, submitted }) {
+  let className = "w-20 px-2 py-1 border-2 rounded text-center font-bold ";
+  if (!submitted) className += "bg-yellow-50 border-yellow-400";
+  else if (isCorrect) className += "bg-green-100 border-green-500 text-green-700";
+  else className += "bg-red-100 border-red-500 text-red-700";
+  return <input type="number" value={value} onChange={onChange} disabled={submitted && isCorrect} className={className} placeholder="?" />;
+}
+
 function Round1({ onComplete }) {
   const [durInput, setDurInput] = useState({ exc: '', pipe: '', back: '' });
   const [durValidated, setDurValidated] = useState(false);
@@ -251,16 +264,6 @@ function Round1({ onComplete }) {
 
   const allScheduleFilled = fullSchedule.excS > 0 && fullSchedule.pipeS > 0 && fullSchedule.backS > 0;
 
-  const InputCell = ({ value, onChange, disabled }) => (<input type="number" value={value} onChange={onChange} disabled={disabled} className={`w-16 px-1 py-1 border-2 rounded text-center text-sm font-bold ${disabled ? 'bg-gray-100 border-gray-300 text-gray-400' : 'bg-yellow-50 border-yellow-400'}`} placeholder="?" />);
-
-  const DurationInputCell = ({ value, onChange, isCorrect, submitted }) => {
-    let className = "w-20 px-2 py-1 border-2 rounded text-center font-bold ";
-    if (!submitted) className += "bg-yellow-50 border-yellow-400";
-    else if (isCorrect) className += "bg-green-100 border-green-500 text-green-700";
-    else className += "bg-red-100 border-red-500 text-red-700";
-    return <input type="number" value={value} onChange={onChange} disabled={submitted && isCorrect} className={className} placeholder="?" />;
-  };
-
   return (
     <div className="space-y-6">
       <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
@@ -282,9 +285,9 @@ function Round1({ onComplete }) {
         <table className="w-full text-sm border">
           <thead className="bg-gray-100"><tr><th className="px-2 py-2 border text-left">Activity</th><th className="px-2 py-2 border text-center">Rate (ft/day)</th><th className="px-2 py-2 border text-center bg-yellow-50">Duration (days)</th></tr></thead>
           <tbody>
-            <tr className="text-blue-700"><td className="px-2 py-2 border">Excavation & Bedding</td><td className="px-2 py-2 border text-center">{CREWS.exc.rate}</td><td className="px-2 py-2 border text-center"><DurationInputCell value={durInput.exc} onChange={(e) => setDurInput({ ...durInput, exc: e.target.value })} isCorrect={durCorrect.exc} submitted={durValidated} /></td></tr>
-            <tr className="text-green-700"><td className="px-2 py-2 border">Pipe Laying & Alignment</td><td className="px-2 py-2 border text-center">{CREWS.pipe.rate}</td><td className="px-2 py-2 border text-center"><DurationInputCell value={durInput.pipe} onChange={(e) => setDurInput({ ...durInput, pipe: e.target.value })} isCorrect={durCorrect.pipe} submitted={durValidated} /></td></tr>
-            <tr className="text-orange-700"><td className="px-2 py-2 border">Backfill & Compaction</td><td className="px-2 py-2 border text-center">{CREWS.back.rate}</td><td className="px-2 py-2 border text-center"><DurationInputCell value={durInput.back} onChange={(e) => setDurInput({ ...durInput, back: e.target.value })} isCorrect={durCorrect.back} submitted={durValidated} /></td></tr>
+            <tr className="text-blue-700"><td className="px-2 py-2 border">Excavation & Bedding</td><td className="px-2 py-2 border text-center">{CREWS.exc.rate}</td><td className="px-2 py-2 border text-center"><R1DurationInputCell value={durInput.exc} onChange={(e) => setDurInput({ ...durInput, exc: e.target.value })} isCorrect={durCorrect.exc} submitted={durValidated} /></td></tr>
+            <tr className="text-green-700"><td className="px-2 py-2 border">Pipe Laying & Alignment</td><td className="px-2 py-2 border text-center">{CREWS.pipe.rate}</td><td className="px-2 py-2 border text-center"><R1DurationInputCell value={durInput.pipe} onChange={(e) => setDurInput({ ...durInput, pipe: e.target.value })} isCorrect={durCorrect.pipe} submitted={durValidated} /></td></tr>
+            <tr className="text-orange-700"><td className="px-2 py-2 border">Backfill & Compaction</td><td className="px-2 py-2 border text-center">{CREWS.back.rate}</td><td className="px-2 py-2 border text-center"><R1DurationInputCell value={durInput.back} onChange={(e) => setDurInput({ ...durInput, back: e.target.value })} isCorrect={durCorrect.back} submitted={durValidated} /></td></tr>
           </tbody>
         </table>
         <div className="mt-4">
@@ -304,9 +307,9 @@ function Round1({ onComplete }) {
             <thead className="bg-gray-100"><tr><th className="px-2 py-2 border text-left">Activity</th><th className="px-2 py-2 border text-center">Rate (ft/day)</th><th className="px-2 py-2 border text-center">Duration (days)</th><th className="px-2 py-2 border text-center bg-yellow-50">Start</th><th className="px-2 py-2 border text-center">End</th></tr></thead>
             <tbody>
               <tr className="bg-gray-50"><td className="px-2 py-2 border">Mobilization</td><td className="px-2 py-2 border text-center">-</td><td className="px-2 py-2 border text-center">{MOB_DAYS}</td><td className="px-2 py-2 border text-center">1</td><td className="px-2 py-2 border text-center">{MOB_DAYS}</td></tr>
-              <tr className="text-blue-700"><td className="px-2 py-2 border">Excavation & Bedding</td><td className="px-2 py-2 border text-center">{CREWS.exc.rate}</td><td className="px-2 py-2 border text-center">{CORRECT_DURATIONS.exc}</td><td className="px-2 py-2 border text-center"><InputCell value={scheduleInput.excS} onChange={(e) => setScheduleInput({ ...scheduleInput, excS: e.target.value })} /></td><td className="px-2 py-2 border text-center font-bold">{fullSchedule.excE > 0 ? fullSchedule.excE : '-'}</td></tr>
-              <tr className="text-green-700"><td className="px-2 py-2 border">Pipe Laying & Alignment</td><td className="px-2 py-2 border text-center">{CREWS.pipe.rate}</td><td className="px-2 py-2 border text-center">{CORRECT_DURATIONS.pipe}</td><td className="px-2 py-2 border text-center"><InputCell value={scheduleInput.pipeS} onChange={(e) => setScheduleInput({ ...scheduleInput, pipeS: e.target.value })} /></td><td className="px-2 py-2 border text-center font-bold">{fullSchedule.pipeE > 0 ? fullSchedule.pipeE : '-'}</td></tr>
-              <tr className="text-orange-700"><td className="px-2 py-2 border">Backfill & Compaction</td><td className="px-2 py-2 border text-center">{CREWS.back.rate}</td><td className="px-2 py-2 border text-center">{CORRECT_DURATIONS.back}</td><td className="px-2 py-2 border text-center"><InputCell value={scheduleInput.backS} onChange={(e) => setScheduleInput({ ...scheduleInput, backS: e.target.value })} /></td><td className="px-2 py-2 border text-center font-bold">{fullSchedule.backE > 0 ? fullSchedule.backE : '-'}</td></tr>
+              <tr className="text-blue-700"><td className="px-2 py-2 border">Excavation & Bedding</td><td className="px-2 py-2 border text-center">{CREWS.exc.rate}</td><td className="px-2 py-2 border text-center">{CORRECT_DURATIONS.exc}</td><td className="px-2 py-2 border text-center"><R1InputCell value={scheduleInput.excS} onChange={(e) => setScheduleInput({ ...scheduleInput, excS: e.target.value })} /></td><td className="px-2 py-2 border text-center font-bold">{fullSchedule.excE > 0 ? fullSchedule.excE : '-'}</td></tr>
+              <tr className="text-green-700"><td className="px-2 py-2 border">Pipe Laying & Alignment</td><td className="px-2 py-2 border text-center">{CREWS.pipe.rate}</td><td className="px-2 py-2 border text-center">{CORRECT_DURATIONS.pipe}</td><td className="px-2 py-2 border text-center"><R1InputCell value={scheduleInput.pipeS} onChange={(e) => setScheduleInput({ ...scheduleInput, pipeS: e.target.value })} /></td><td className="px-2 py-2 border text-center font-bold">{fullSchedule.pipeE > 0 ? fullSchedule.pipeE : '-'}</td></tr>
+              <tr className="text-orange-700"><td className="px-2 py-2 border">Backfill & Compaction</td><td className="px-2 py-2 border text-center">{CREWS.back.rate}</td><td className="px-2 py-2 border text-center">{CORRECT_DURATIONS.back}</td><td className="px-2 py-2 border text-center"><R1InputCell value={scheduleInput.backS} onChange={(e) => setScheduleInput({ ...scheduleInput, backS: e.target.value })} /></td><td className="px-2 py-2 border text-center font-bold">{fullSchedule.backE > 0 ? fullSchedule.backE : '-'}</td></tr>
             </tbody>
           </table>
           <div className="mt-4 p-3 bg-blue-50 rounded-lg text-center"><span className="text-gray-600">Project Duration:</span><span className="ml-3 text-2xl font-bold text-blue-600">{allScheduleFilled ? `${fullSchedule.end} days` : '- days'}</span></div>
@@ -711,6 +714,13 @@ function ThankYou() {
 }
 
 // ==================== MAIN GAME COMPONENT ====================
+// R2 input cell (defined outside LOBGame to prevent focus loss on re-render)
+function R2InputCell({ value, onChange, correct, submitted }) {
+  let bg = "bg-yellow-50 border-yellow-400";
+  if (submitted) bg = parseInt(value) === correct ? "bg-green-100 border-green-500" : "bg-red-100 border-red-500";
+  return <input type="number" value={value} onChange={onChange} className={`w-16 px-1 py-1 border-2 rounded text-center text-sm ${bg}`} />;
+}
+
 export default function LOBGame() {
   const [round, setRound] = useState(0);
   const [preSurveyData, setPreSurveyData] = useState(null);
@@ -922,12 +932,6 @@ export default function LOBGame() {
     completeRound(gameRound, roundValues);
     setResults(p => ({ ...p, [gameRound]: res }));
     setRound(round + 1);
-  };
-
-  const InputCell = ({ value, onChange, correct, submitted }) => {
-    let bg = "bg-yellow-50 border-yellow-400";
-    if (submitted) bg = parseInt(value) === correct ? "bg-green-100 border-green-500" : "bg-red-100 border-red-500";
-    return <input type="number" value={value} onChange={onChange} className={`w-16 px-1 py-1 border-2 rounded text-center text-sm ${bg}`} />;
   };
 
   const BudgetTable = ({ cost, durExc, durPipe, durBack, costExc, costPipe, costBack }) => (
