@@ -53,12 +53,14 @@ const SELF_CONFIDENCE_QUESTIONS = [
 ];
 
 const EXPERIENCE_QUESTIONS = [
-  { id: 'EX1', question: 'The game helped me understand LOB scheduling concepts' },
-  { id: 'EX2', question: 'The visual feedback was helpful for learning' },
-  { id: 'EX3', question: 'The difficulty level was appropriate' },
-  { id: 'EX4', question: 'I would recommend this game to other students' },
-  { id: 'EX5', question: 'The game was engaging' },
-  { id: 'EX6', question: 'I learned something new' },
+  { id: 'EX1', question: 'Inputting duration values directly helped me understand Line of Balance scheduling concepts' },
+  { id: 'EX2', question: 'Dragging bars and lines on the charts helped me understand Line of Balance scheduling concepts' },
+  { id: 'EX3', question: 'Calculating and entering durations became difficult as the game progressed' },
+  { id: 'EX4', question: 'Manipulating the charts became difficult as the game progressed' },
+  { id: 'EX5', question: 'I would recommend this game to students unfamiliar with Line of Balance concepts' },
+  { id: 'EX6', question: 'The game interactions (entering values and adjusting charts) were easy to follow' },
+  { id: 'EX7', question: 'The Line of Balance concept was easy to understand through the game' },
+  { id: 'EX8', question: 'I learned something new from this game' },
 ];
 
 const calculateKnowledgeScore = (answers) => KNOWLEDGE_QUESTIONS.reduce((score, q) => score + (answers[q.id] === q.correct ? 1 : 0), 0);
@@ -689,9 +691,9 @@ function PostSurvey({ onComplete, playerName, preKnowledgeScore, preSCScore }) {
                 <div className="flex justify-between gap-2">{[1, 2, 3, 4, 5].map(num => (<label key={num} className={getRatingClass(experience[q.id], num)}><input type="radio" className="sr-only" checked={experience[q.id] === num} onChange={() => setExperience({ ...experience, [q.id]: num })} /><span className={`text-2xl font-bold ${experience[q.id] === num ? 'text-green-600' : 'text-gray-400'}`}>{num}</span></label>))}</div>
               </div>
             ))}
-            <div><label className="block text-sm font-medium text-gray-700 mb-2">Plus: What aspect do you like most about the game? (Optional)</label><textarea value={commentPlus} onChange={e => setCommentPlus(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none" rows={3} placeholder="What did you like most?" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-2">Delta: What aspect do you think could be improved? (Optional)</label><textarea value={commentDelta} onChange={e => setCommentDelta(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none" rows={3} placeholder="What could be improved?" /></div>
-            <div className="flex gap-3 pt-2"><button onClick={() => setStep(2)} className="flex-1 py-3 rounded-lg font-bold border-2 border-gray-300 hover:bg-gray-50">← Back</button><button onClick={handleSubmit} disabled={!isEXComplete} className={`flex-1 py-3 rounded-lg font-bold transition-all ${isEXComplete ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Complete Survey →</button></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-2">Plus: What was the most memorable "aha!" moment during the game? <span className="text-red-500">*</span></label><textarea value={commentPlus} onChange={e => setCommentPlus(e.target.value)} className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${commentPlus.trim() ? 'border-gray-200 focus:border-green-500' : 'border-red-200 focus:border-red-400'}`} rows={3} placeholder="Describe your aha! moment..." /></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-2">Delta: If you could change one thing about the game, what would it be? <span className="text-red-500">*</span></label><textarea value={commentDelta} onChange={e => setCommentDelta(e.target.value)} className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${commentDelta.trim() ? 'border-gray-200 focus:border-green-500' : 'border-red-200 focus:border-red-400'}`} rows={3} placeholder="What would you change?" /></div>
+            <div className="flex gap-3 pt-2"><button onClick={() => setStep(2)} className="flex-1 py-3 rounded-lg font-bold border-2 border-gray-300 hover:bg-gray-50">← Back</button><button onClick={handleSubmit} disabled={!isEXComplete || !commentPlus.trim() || !commentDelta.trim()} className={`flex-1 py-3 rounded-lg font-bold transition-all ${isEXComplete && commentPlus.trim() && commentDelta.trim() ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Complete Survey →</button></div>
           </div>
         )}
       </div>
@@ -1108,6 +1110,7 @@ export default function LOBGame() {
           EX1: data.experience.EX1, EX2: data.experience.EX2,
           EX3: data.experience.EX3, EX4: data.experience.EX4,
           EX5: data.experience.EX5, EX6: data.experience.EX6,
+          EX7: data.experience.EX7, EX8: data.experience.EX8,
           exScore: data.exScore,
           commentPlus: data.commentPlus,
           commentDelta: data.commentDelta,
