@@ -723,6 +723,8 @@ function R2InputCell({ value, onChange, correct, submitted }) {
 
 export default function LOBGame() {
   const [round, setRound] = useState(0);
+  const [highestRound, setHighestRound] = useState(0); // tracks furthest round reached
+  const [backCount, setBackCount] = useState({ r2to1: 0, r3to2: 0, r4to3: 0, r5to4: 0, summaryTo5: 0 });
   const [preSurveyData, setPreSurveyData] = useState(null);
   const [postSurveyData, setPostSurveyData] = useState(null);
 
@@ -931,8 +933,33 @@ export default function LOBGame() {
 
     completeRound(gameRound, roundValues);
     setResults(p => ({ ...p, [gameRound]: res }));
-    setRound(round + 1);
+    const nextR = round + 1;
+    setRound(nextR);
+    if (nextR > highestRound) setHighestRound(nextR);
   };
+
+  // Go back one game round (only within game rounds 2-7)
+  // round 2=R1, 3=R2, 4=R3, 5=R4, 6=R5, 7=GameSummary
+  const goBack = () => {
+    if (round < 3) return; // can't go back from R1 (round 2)
+    const gameRound = round - 1;
+    const backKey = gameRound === 1 ? null
+      : gameRound === 2 ? 'r2to1'
+      : gameRound === 3 ? 'r3to2'
+      : gameRound === 4 ? 'r4to3'
+      : gameRound === 5 ? 'r5to4'
+      : null;
+    // Special: round 7 (GameSummary) going back to R5 (round 6)
+    const key = round === 7 ? 'summaryTo5' : backKey;
+    if (key) {
+      setBackCount(p => ({ ...p, [key]: p[key] + 1 }));
+      logEvent('BACK_BUTTON', { from: round === 7 ? 'Summary' : `R${gameRound}`, to: round === 7 ? 'R5' : `R${gameRound - 1}`, count: backCount[key] + 1 });
+    }
+    setRound(round - 1);
+  };
+
+  // Check if back button should be shown
+  const canGoBack = round >= 3 && round <= 7; // R2 through GameSummary
 
   const BudgetTable = ({ cost, durExc, durPipe, durBack, costExc, costPipe, costBack }) => (
     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1170,9 +1197,18 @@ export default function LOBGame() {
               r3Time: gameLog.rounds[3]?.timeSpent || 0,
               r4Time: gameLog.rounds[4]?.timeSpent || 0,
               r5Time: gameLog.rounds[5]?.timeSpent || 0,
+              backR2toR1: backCount.r2to1,
+              backR3toR2: backCount.r3to2,
+              backR4toR3: backCount.r4to3,
+              backR5toR4: backCount.r5to4,
+              backSummaryToR5: backCount.summaryTo5,
             });
             setRound(8);
           }} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Continue to Final Survey →</button>
+
+          <button onClick={goBack} className="w-full mt-2 bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600">
+            ← Go Back to R5 to Revise
+          </button>
         </div>
       </div>
     );
@@ -1186,7 +1222,14 @@ export default function LOBGame() {
     <div className="min-h-screen bg-gray-100">
       <div className="bg-blue-900 text-white py-2 px-4 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <span><span className="text-blue-300">Player:</span> <strong>{playerName}</strong></span>
+          <div className="flex items-center gap-3">
+            {canGoBack && (
+              <button onClick={goBack} className="px-2 py-1 bg-blue-700 hover:bg-blue-600 rounded text-sm font-bold transition-all" title="Go back to revise previous round">
+                ← Back
+              </button>
+            )}
+            <span><span className="text-blue-300">Player:</span> <strong>{playerName}</strong></span>
+          </div>
           <span className="font-bold">Round {gameRound}: {titles[gameRound]}</span>
           <div className="text-sm">🎯 ≤{TARGET_DAYS}d | 💰 ≤${TARGET_COST / 1000}K</div>
         </div>
@@ -1208,6 +1251,7 @@ export default function LOBGame() {
             setResults(p => ({ ...p, 1: { round: 1, ...fullSchedule } }));
             completeRound(1, { excStart: fullSchedule.excS, excEnd: fullSchedule.excE, pipeStart: fullSchedule.pipeS, pipeEnd: fullSchedule.pipeE, backStart: fullSchedule.backS, backEnd: fullSchedule.backE, projectEnd: fullSchedule.end });
             setRound(3);
+            if (3 > highestRound) setHighestRound(3);
           }} />
         )}
 
