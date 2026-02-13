@@ -748,6 +748,7 @@ export default function LOBGame() {
   });
   const [r5Buffer, setR5Buffer] = useState(5);
   const [results, setResults] = useState({});
+  const [r5FirstAttempt, setR5FirstAttempt] = useState(null); // stores first R5 result for improvement analysis
 
   // ==================== DATA LOGGING SYSTEM ====================
   const [gameLog, setGameLog] = useState({
@@ -929,7 +930,7 @@ export default function LOBGame() {
     if (gameRound === 2) { Object.assign(res, { ...r2Student, cost: r2Cost.total }); roundValues = { excStart: r2Student.excS, pipeStart: r2Student.pipeS, backStart: r2Student.backS, projectEnd: r2Student.end, cost: r2Cost.total, buffer: DEFAULT_BUFFER }; }
     if (gameRound === 3) { Object.assign(res, { ...r3, buffer: r3Buffer }); roundValues = { buffer: r3Buffer, projectEnd: r3.end, cost: r2Cost.total }; }
     if (gameRound === 4) { Object.assign(res, { end: r4.end, cost: r4Cost.total }); roundValues = { excEquipment: r4.excName, pipeEquipment: r4.pipeName, backEquipment: r4.backName, projectEnd: r4.end, cost: r4Cost.total }; }
-    if (gameRound === 5) { const passed = r5.end <= TARGET_DAYS && r5Cost.total <= TARGET_COST; Object.assign(res, { end: r5.end, cost: r5Cost.total, buffer: r5Buffer, pass: passed }); roundValues = { buffer: r5Buffer, excConfig: r5Config.exc, pipeConfig: r5Config.pipe, backConfig: r5Config.back, projectEnd: r5.end, cost: r5Cost.total, passed, metDurationTarget: r5.end <= TARGET_DAYS, metCostTarget: r5Cost.total <= TARGET_COST }; }
+    if (gameRound === 5) { const passed = r5.end <= TARGET_DAYS && r5Cost.total <= TARGET_COST; Object.assign(res, { end: r5.end, cost: r5Cost.total, buffer: r5Buffer, pass: passed }); roundValues = { buffer: r5Buffer, excConfig: r5Config.exc, pipeConfig: r5Config.pipe, backConfig: r5Config.back, projectEnd: r5.end, cost: r5Cost.total, passed, metDurationTarget: r5.end <= TARGET_DAYS, metCostTarget: r5Cost.total <= TARGET_COST }; if (!r5FirstAttempt) setR5FirstAttempt({ end: r5.end, cost: r5Cost.total, buffer: r5Buffer, pass: passed }); }
 
     completeRound(gameRound, roundValues);
     setResults(p => ({ ...p, [gameRound]: res }));
@@ -1161,6 +1162,43 @@ export default function LOBGame() {
             <p className="text-xs text-gray-500 mt-2">💡 Notice: R1-R3 have the <strong>same cost</strong> because only buffer/timing changed, not equipment.</p>
           </div>
 
+          {r5FirstAttempt && (r5FirstAttempt.end !== results[5]?.end || r5FirstAttempt.cost !== results[5]?.cost) && (
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+              <h3 className="font-bold text-blue-800 mb-3">🔄 R5 Revision Improvement</h3>
+              <p className="text-sm text-blue-700 mb-3">You went back and revised your R5 result. Here's the comparison:</p>
+              <table className="w-full text-sm border-collapse">
+                <thead><tr className="bg-blue-100"><th className="px-3 py-2 border"></th><th className="px-3 py-2 border text-center">1st Attempt</th><th className="px-3 py-2 border text-center">Final Result</th><th className="px-3 py-2 border text-center">Change</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border font-bold">Duration</td>
+                    <td className={`px-3 py-2 border text-center ${r5FirstAttempt.end <= TARGET_DAYS ? 'text-green-600' : 'text-red-600'}`}>{r5FirstAttempt.end} days</td>
+                    <td className={`px-3 py-2 border text-center font-bold ${results[5]?.end <= TARGET_DAYS ? 'text-green-600' : 'text-red-600'}`}>{results[5]?.end} days</td>
+                    <td className={`px-3 py-2 border text-center font-bold ${results[5]?.end < r5FirstAttempt.end ? 'text-green-600' : results[5]?.end > r5FirstAttempt.end ? 'text-red-600' : 'text-gray-500'}`}>
+                      {results[5]?.end < r5FirstAttempt.end ? `↓ ${r5FirstAttempt.end - results[5]?.end} days` : results[5]?.end > r5FirstAttempt.end ? `↑ ${results[5]?.end - r5FirstAttempt.end} days` : 'No change'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border font-bold">Cost</td>
+                    <td className={`px-3 py-2 border text-center ${r5FirstAttempt.cost <= TARGET_COST ? 'text-green-600' : 'text-red-600'}`}>${r5FirstAttempt.cost?.toLocaleString()}</td>
+                    <td className={`px-3 py-2 border text-center font-bold ${results[5]?.cost <= TARGET_COST ? 'text-green-600' : 'text-red-600'}`}>${results[5]?.cost?.toLocaleString()}</td>
+                    <td className={`px-3 py-2 border text-center font-bold ${results[5]?.cost < r5FirstAttempt.cost ? 'text-green-600' : results[5]?.cost > r5FirstAttempt.cost ? 'text-red-600' : 'text-gray-500'}`}>
+                      {results[5]?.cost < r5FirstAttempt.cost ? `↓ $${(r5FirstAttempt.cost - results[5]?.cost).toLocaleString()}` : results[5]?.cost > r5FirstAttempt.cost ? `↑ $${(results[5]?.cost - r5FirstAttempt.cost).toLocaleString()}` : 'No change'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border font-bold">Passed?</td>
+                    <td className={`px-3 py-2 border text-center ${r5FirstAttempt.pass ? 'text-green-600' : 'text-red-600'}`}>{r5FirstAttempt.pass ? '✅ Yes' : '❌ No'}</td>
+                    <td className={`px-3 py-2 border text-center font-bold ${results[5]?.pass ? 'text-green-600' : 'text-red-600'}`}>{results[5]?.pass ? '✅ Yes' : '❌ No'}</td>
+                    <td className={`px-3 py-2 border text-center font-bold ${!r5FirstAttempt.pass && results[5]?.pass ? 'text-green-600' : ''}`}>
+                      {!r5FirstAttempt.pass && results[5]?.pass ? '🎉 Improved!' : r5FirstAttempt.pass && !results[5]?.pass ? '⚠️ Regressed' : 'Same'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p className="text-xs text-blue-600 mt-2">Total back presses: {backCount.r2to1 + backCount.r3to2 + backCount.r4to3 + backCount.r5to4 + backCount.summaryTo5}</p>
+            </div>
+          )}
+
           <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
             <h3 className="font-bold text-yellow-800">📚 What You Learned</h3>
             <ul className="mt-2 text-sm text-yellow-900 space-y-1">
@@ -1202,6 +1240,10 @@ export default function LOBGame() {
               backR4toR3: backCount.r4to3,
               backR5toR4: backCount.r5to4,
               backSummaryToR5: backCount.summaryTo5,
+              r5FirstDuration: r5FirstAttempt?.end || results[5]?.end,
+              r5FirstCost: r5FirstAttempt?.cost || results[5]?.cost,
+              r5FirstBuffer: r5FirstAttempt?.buffer || results[5]?.buffer,
+              r5FirstPassed: r5FirstAttempt ? (r5FirstAttempt.pass ? 'Yes' : 'No') : (results[5]?.pass ? 'Yes' : 'No'),
             });
             setRound(8);
           }} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Continue to Final Survey →</button>
