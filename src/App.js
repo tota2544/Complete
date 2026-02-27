@@ -734,12 +734,19 @@ export default function LOBGame() {
   const [r2Schedule, setR2Schedule] = useState(null);
   const [r2Validated, setR2Validated] = useState(false);
   const [r2FlashCards, setR2FlashCards] = useState({ whyProblem: false, whyMatter: false, whatIsLOB: false, howToFix: false, distanceCalc: false, assumptions: false, howToRevise: false });
+  const [r2SourceR1, setR2SourceR1] = useState(null); // tracks which R1 schedule was used to init R2
 
   useEffect(() => {
-    if (round === 3 && !r2Schedule && r1Schedule) {
-      setR2Schedule({ excS: r1Schedule.excS, pipeS: r1Schedule.pipeS, backS: r1Schedule.backS });
+    if (round === 3 && r1Schedule) {
+      // Reset R2 solid lines whenever R1 schedule has changed since last init
+      const r1Key = `${r1Schedule.excS}-${r1Schedule.pipeS}-${r1Schedule.backS}`;
+      if (r2SourceR1 !== r1Key) {
+        setR2Schedule({ excS: r1Schedule.excS, pipeS: r1Schedule.pipeS, backS: r1Schedule.backS });
+        setR2SourceR1(r1Key);
+        setR2Validated(false);
+      }
     }
-  }, [round, r2Schedule, r1Schedule]);
+  }, [round, r1Schedule, r2SourceR1]);
 
   const [r3Buffer, setR3Buffer] = useState(5);
   const [r4Eq, setR4Eq] = useState({ exc: 1, pipe: 0, back: 1 });
@@ -1464,7 +1471,7 @@ export default function LOBGame() {
             <ResponsiveContainer width="100%" height={280}><LineChart data={genLOB([r2Correct, r4])} margin={{ top: 10, right: 30, bottom: 30, left: 60 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="day" label={{ value: 'Duration (day)', position: 'insideBottom', offset: -5 }} /><YAxis domain={[0, PROJECT_LENGTH]} tickFormatter={v => (v/1000).toFixed(0)+'k'} label={{ value: 'Distance (ft)', angle: -90, position: 'insideLeft', offset: 10 }} /><Tooltip /><Legend verticalAlign="top" height={36} /><Line type="linear" dataKey="exc0" stroke="#2563eb" strokeWidth={1} strokeDasharray="5 5" name="Exc R2" dot={false} /><Line type="linear" dataKey="pipe0" stroke="#16a34a" strokeWidth={1} strokeDasharray="5 5" name="Pipe R2" dot={false} /><Line type="linear" dataKey="back0" stroke="#ea580c" strokeWidth={1} strokeDasharray="5 5" name="Back R2" dot={false} /><Line type="linear" dataKey="exc1" stroke="#2563eb" strokeWidth={3} name="Exc R4" dot={false} /><Line type="linear" dataKey="pipe1" stroke="#16a34a" strokeWidth={3} name="Pipe R4" dot={false} /><Line type="linear" dataKey="back1" stroke="#ea580c" strokeWidth={3} name="Back R4" dot={false} /></LineChart></ResponsiveContainer>
           </div>
           <div className="bg-white rounded-lg shadow p-4"><h3 className="font-bold mb-2">💰 R4 Budget</h3><BudgetTable cost={r4Cost} durExc={r4.excDur} durPipe={r4.pipeDur} durBack={r4.backDur} costExc={r4.excCost} costPipe={r4.pipeCost} costBack={r4.backCost} /></div>
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded"><h4 className="font-bold text-yellow-800">💡 Key Insight</h4><div className="mt-2 text-sm text-yellow-900 space-y-1"><p>Rate ↑ → Duration may ↑ or be the same</p><p>Rate ↑ → Cost may ↑ or ↓</p></div><p className="mt-3 text-sm text-yellow-800"><strong>The cheapest option is not always the slowest!</strong></p></div>
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded"><h4 className="font-bold text-yellow-800">💡 Key Insight</h4><div className="mt-2 text-sm text-yellow-900 space-y-1"><p>Rate ↑ → Duration ↓</p><p>Rate ↑ → Cost may ↑ or ↓</p></div><p className="mt-3 text-sm text-yellow-800"><strong>The cheapest option is not always the slowest!</strong></p></div>
           <div className="flex gap-3">
             <button onClick={goBack} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">← Back to R3</button>
             <button onClick={nextRound} className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold">Complete R4 → R5</button>
