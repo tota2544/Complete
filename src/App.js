@@ -8,7 +8,7 @@ const DEFAULT_BUFFER = 5;
 const INDIRECT_RATE = 0.30;
 const PROFIT_RATE = 0.05;
 const TARGET_DAYS = 55;
-const TARGET_COST = 550000;
+const TARGET_COST = 650000;
 
 const CREWS = {
   exc: { rate: 220, cost: 1600, name: 'Excavation & Bedding', equipment: 'Excavator' },
@@ -883,12 +883,14 @@ export default function LOBGame() {
   }, [r4]);
 
   const r5Calc = useMemo(() => {
-    const excRate = (r5Config.exc.small * 165) + (r5Config.exc.standard * 220) + (r5Config.exc.large * 330) || 1;
-    const excCost = (r5Config.exc.small * 900) + (r5Config.exc.standard * 1200) + (r5Config.exc.large * 1800);
-    const pipeRate = (r5Config.pipe.standard * 180) + (r5Config.pipe.heavy * 270) || 1;
-    const pipeCost = (r5Config.pipe.standard * 1800) + (r5Config.pipe.heavy * 2800);
-    const backRate = (r5Config.back.small * 180) + (r5Config.back.standard * 250) + (r5Config.back.large * 375) || 1;
-    const backCost = (r5Config.back.small * 1400) + (r5Config.back.standard * 1800) + (r5Config.back.large * 2600);
+    // Rates and daily costs are derived directly from the EQUIPMENT table so the
+    // R5 Schedule always matches the prices shown on the equipment cards.
+    const excRate = (r5Config.exc.small * EQUIPMENT.exc[0].rate) + (r5Config.exc.standard * EQUIPMENT.exc[1].rate) + (r5Config.exc.large * EQUIPMENT.exc[2].rate) || 1;
+    const excCost = (r5Config.exc.small * EQUIPMENT.exc[0].cost) + (r5Config.exc.standard * EQUIPMENT.exc[1].cost) + (r5Config.exc.large * EQUIPMENT.exc[2].cost);
+    const pipeRate = (r5Config.pipe.standard * EQUIPMENT.pipe[0].rate) + (r5Config.pipe.heavy * EQUIPMENT.pipe[1].rate) || 1;
+    const pipeCost = (r5Config.pipe.standard * EQUIPMENT.pipe[0].cost) + (r5Config.pipe.heavy * EQUIPMENT.pipe[1].cost);
+    const backRate = (r5Config.back.small * EQUIPMENT.back[0].rate) + (r5Config.back.standard * EQUIPMENT.back[1].rate) + (r5Config.back.large * EQUIPMENT.back[2].rate) || 1;
+    const backCost = (r5Config.back.small * EQUIPMENT.back[0].cost) + (r5Config.back.standard * EQUIPMENT.back[1].cost) + (r5Config.back.large * EQUIPMENT.back[2].cost);
     return { exc: { rate: excRate, cost: excCost }, pipe: { rate: pipeRate, cost: pipeCost }, back: { rate: backRate, cost: backCost } };
   }, [r5Config]);
 
